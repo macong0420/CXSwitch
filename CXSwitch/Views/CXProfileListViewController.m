@@ -109,23 +109,39 @@
     // 列定义
     NSTableColumn *nameColumn = [[NSTableColumn alloc] initWithIdentifier:@"name"];
     nameColumn.title = @"名称";
-    nameColumn.width = 200;
+    nameColumn.width = 180;
+    nameColumn.minWidth = 100;
+    nameColumn.maxWidth = 300;
+    nameColumn.resizingMask = NSTableColumnAutoresizingMask;
     [self.tableView addTableColumn:nameColumn];
     
     NSTableColumn *urlColumn = [[NSTableColumn alloc] initWithIdentifier:@"url"];
     urlColumn.title = @"Base URL";
-    urlColumn.width = 300;
+    urlColumn.width = 280;
+    urlColumn.minWidth = 150;
+    urlColumn.maxWidth = 600;
+    urlColumn.resizingMask = NSTableColumnAutoresizingMask;
     [self.tableView addTableColumn:urlColumn];
     
     NSTableColumn *lastUsedColumn = [[NSTableColumn alloc] initWithIdentifier:@"lastUsed"];
     lastUsedColumn.title = @"最后使用";
-    lastUsedColumn.width = 120;
+    lastUsedColumn.width = 100;
+    lastUsedColumn.minWidth = 80;
+    lastUsedColumn.maxWidth = 120;
+    lastUsedColumn.resizingMask = NSTableColumnAutoresizingMask;
     [self.tableView addTableColumn:lastUsedColumn];
     
+    // 操作列：固定宽度，始终可见
     NSTableColumn *actionsColumn = [[NSTableColumn alloc] initWithIdentifier:@"actions"];
     actionsColumn.title = @"操作";
-    actionsColumn.width = 150;
+    actionsColumn.width = 100;
+    actionsColumn.minWidth = 100;
+    actionsColumn.maxWidth = 100;
+    actionsColumn.resizingMask = NSTableColumnNoResizing;
     [self.tableView addTableColumn:actionsColumn];
+    
+    // 设置表格列自动调整模式：优先收缩前面的列
+    self.tableView.columnAutoresizingStyle = NSTableViewSequentialColumnAutoresizingStyle;
     
     self.scrollView.documentView = self.tableView;
     
