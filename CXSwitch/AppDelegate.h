@@ -7,8 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class CXStatusItemController;
+
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
+@property (nonatomic, strong, readonly) CXStatusItemController *statusItemController;
 
 @end
-
