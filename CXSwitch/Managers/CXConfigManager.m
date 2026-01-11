@@ -27,6 +27,7 @@ static NSString * const kDefaultModelValue = @"gpt-5.2";
 - (BOOL)updateConfigTomlWithProfile:(CXProfile *)profile error:(NSError **)error;
 - (NSString *)contentByApplyingManagedProviderToConfig:(NSString *)content profile:(CXProfile *)profile;
 - (BOOL)writeStateProfileName:(NSString *)name error:(NSError **)error;
+- (nullable NSString *)codexSwitchProfileKeyForProfile:(CXProfile *)profile;
 @end
 
 @implementation CXConfigManager
@@ -172,7 +173,11 @@ static NSString * const kDefaultModelValue = @"gpt-5.2";
     }
 
     // 3. 写入 state（便于终端侧/其他工具显示当前状态）
-    [self writeStateProfileName:profile.name error:nil];
+    // 兼容用户在 shell 启动时自动运行 ~/.codex/codex_switch.sh 的场景：
+    // 该脚本通常读取 ~/.codex/current_profile 并将其作为 profile 参数。
+    // 如果写入显示名（例如中文/空格），会导致脚本打印 usage 并产生“无关输出”。
+    NSString *stateKey = [self codexSwitchProfileKeyForProfile:profile];
+    [self writeStateProfileName:(stateKey ?: @"") error:nil];
     
     // 发送通知
     [[NSNotificationCenter defaultCenter] postNotificationName:CXConfigDidApplyNotification 
@@ -227,7 +232,8 @@ static NSString * const kDefaultModelValue = @"gpt-5.2";
     [self cleanupConfigTomlWithError:nil];
 
     // 4. 更新 state
-    [self writeStateProfileName:@"official" error:nil];
+    // 写空避免触发用户 shell 启动时执行 codex_switch.sh 的 usage 输出
+    [self writeStateProfileName:@"" error:nil];
     
     // 发送通知
     [[NSNotificationCenter defaultCenter] postNotificationName:CXConfigDidApplyNotification 
@@ -703,6 +709,42 @@ static NSString * const kDefaultModelValue = @"gpt-5.2";
 
     [[NSFileManager defaultManager] setAttributes:@{NSFilePosixPermissions: @(0644)} ofItemAtPath:path error:nil];
     return YES;
+}
+
+- (nullable NSString *)codexSwitchProfileKeyForProfile:(CXProfile *)profile {
+    if (!profile) return nil;
+
+    // 1) If user already uses a codex_switch-supported key as the display name, keep it.
+    NSString *trimmedName = [[profile.name ?: @"" stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] lowercaseString];
+    if (trimmedName.length > 0) {
+        NSSet<NSString *> *allowed = [NSSet setWithArray:@[
+            @"88code", @"anyrouter", @"anyrouter-5.1", @"anthropic",
+            @"privnode", @"azure", @"ctl", @"paolu", @"hotaru", @"wong", @"york"
+        ]];
+        if ([allowed containsObject:trimmedName]) {
+            return trimmedName;
+        }
+    }
+
+    // 2) Infer by base URL (best-effort).
+    NSString *normalized = [CXProfile normalizeBaseURL:profile.baseURL ?: @""];
+    NSURLComponents *components = [NSURLComponents componentsWithString:normalized];
+    NSString *host = components.host.lowercaseString ?: @"";
+    NSString *path = components.path.lowercaseString ?: @"";
+    if (host.length == 0) return nil;
+
+    // Matches the common profiles in ~/.codex/codex_switch.sh (user's local setup).
+    if ([host isEqualToString:@"wzw.pp.ua"]) return @"wong";
+    if ([host isEqualToString:@"newapi.144500.xyz"]) return @"york";
+    if ([host isEqualToString:@"runanytime.hxi.me"]) return @"paolu";
+    if ([host isEqualToString:@"api.hotaruapi.top"]) return @"hotaru";
+    if ([host isEqualToString:@"chat.199228.xyz"]) return @"ctl";
+    if ([host isEqualToString:@"pro.privnode.com"]) return @"privnode";
+    if ([host isEqualToString:@"c.cspok.cn"]) return @"anyrouter";
+    if ([host isEqualToString:@"www.88code.org"]) return @"88code";
+    if ([host isEqualToString:@"next.ke.com"] && [path containsString:@"/api/plugin/lite-llm"]) return @"azure";
+
+    return nil;
 }
 
 @end
