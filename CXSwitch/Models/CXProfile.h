@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// API Base URL (e.g., https://api.openai.com/v1)
 @property (nonatomic, copy) NSString *baseURL;
 
-/// Model (e.g., gpt-5.2). Optional; if empty, CXSwitch will keep existing config or use a default.
+/// Model (e.g., gpt-5.2). Optional; if empty, CXSwitch will use a default.
 @property (nonatomic, copy, nullable) NSString *model;
 
 /// Optional provider HTTP headers (e.g., Azure proxy headers).

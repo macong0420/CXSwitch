@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Per-user Xcode settings
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+!default.pbxuser
+!default.mode1v3
+!default.mode2v3
+!default.perspectivev3
+xcuserdata/
+
+# SwiftPM
+.build/
+Packages/
+Package.resolved
+
+# Crash logs / symbolication
+*.dSYM
+*.dSYM.zip
+
+# Editor / tooling
+.idea/
+.vscode/
+*.swp
+*.swo

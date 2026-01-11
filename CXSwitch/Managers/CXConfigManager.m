@@ -45,7 +45,19 @@ static NSString * const kDefaultModelValue = @"gpt-5.2";
 #pragma mark - 路径
 
 - (NSString *)codexDirectoryPath {
+    // Prefer CODEX_HOME when available (Codex CLI supports overriding the config directory).
+    NSString *envCodexHome = [NSProcessInfo processInfo].environment[@"CODEX_HOME"];
+    if (envCodexHome.length > 0) {
+        NSString *expanded = [envCodexHome stringByExpandingTildeInPath];
+        if (expanded.length > 0) return expanded;
+    }
+
     NSString *home = NSHomeDirectory();
+    // 在沙盒/不同运行环境下，NSHomeDirectory 可能指向容器目录；尽量拿到真实用户目录
+    NSString *realHome = NSHomeDirectoryForUser(NSUserName());
+    if (realHome.length > 0) {
+        home = realHome;
+    }
     return [home stringByAppendingPathComponent:@".codex"];
 }
 
@@ -480,14 +492,13 @@ static NSString * const kDefaultModelValue = @"gpt-5.2";
     result = [self stringByUpsertingTopLevelKey:kModelProviderKey stringValue:kManagedProviderName inContent:result];
     result = [self stringByUpsertingTopLevelKey:kPreferredAuthMethodKey stringValue:@"apikey" inContent:result];
 
-    // 2.1) 设置 model（如果 Profile 指定了 model 则强制；否则仅在缺失时设置默认值）
-    NSString *existingModel = [self topLevelStringValueForKey:kModelKey inContent:result];
+    // 2.1) 设置 model（如果 Profile 指定了 model 则强制；否则使用默认值，避免“沿用上一个供应商的 model”导致不可用）
     NSString *rawProfileModel = profile.model;
     if (!rawProfileModel) rawProfileModel = @"";
     NSString *profileModel = [rawProfileModel stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if (profileModel.length > 0) {
         result = [self stringByUpsertingTopLevelKey:kModelKey stringValue:profileModel inContent:result];
-    } else if (existingModel.length == 0) {
+    } else {
         result = [self stringByUpsertingTopLevelKey:kModelKey stringValue:kDefaultModelValue inContent:result];
     }
 

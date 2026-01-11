@@ -180,7 +180,7 @@
     urlField.placeholderString = @"Base URL (例如: https://api.openai.com/v1)";
 
     NSTextField *modelField = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 24)];
-    modelField.placeholderString = @"Model（可选，例如: gpt-5.2）";
+    modelField.placeholderString = @"Model（可选，留空则使用默认 gpt-5.2）";
 
     NSSecureTextField *keyField = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 24)];
     keyField.placeholderString = @"API Key";
@@ -642,7 +642,7 @@
         urlField.stringValue = profile.baseURL;
 
         NSTextField *modelField = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 24)];
-        modelField.placeholderString = @"Model（留空则不修改）";
+        modelField.placeholderString = @"Model（可选，留空则使用默认 gpt-5.2）";
         modelField.stringValue = profile.model ?: @"";
         
         NSSecureTextField *keyField = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 24)];
