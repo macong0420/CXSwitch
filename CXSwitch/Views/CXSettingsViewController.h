@@ -2,7 +2,7 @@
 //  CXSettingsViewController.h
 //  CXSwitch
 //
-//  Created by Claude on 2026/1/10.
+//  Created by Mr.C on 2026/1/10.
 //
 
 #import <Cocoa/Cocoa.h>
